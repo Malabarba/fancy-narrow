@@ -5,25 +5,24 @@
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
 ;; URL: http://github.com/Bruce-Connor/fancy-narrow-region
 ;; Version: 0.1a
-;; Keywords: 
+;; Keywords: faces convenience
 ;; Prefix: fancy-narrow
 ;; Separator: -
 
 ;;; Commentary:
-;;
 ;; 
-
-;;; Instructions:
-;;
-;; INSTALLATION
-;;
-;; This package is available fom Melpa, you may install it by calling
-;; M-x package-install.
-;;
-;; Alternatively, you can download it manually, place it in your
-;; `load-path' and require it with
-;;
-;;     (require 'fancy-narrow-region)
+;; fancy-narrow is a package that immitates narrow-to-region with more
+;; eye-candy. Instead of completely hiding text beyond the narrowed
+;; region, the text is de-emphasized and becomes unreachable.
+;; 
+;; Simply call `fancy-narrow-to-region' to see it in action. Remember to
+;; `fancy-widen' afterwards.
+;; 
+;; To change the face used on the blocked text, customise `fancy-narrow-blocked-face'.
+;; 
+;; Note this is designed for user interaction. For using within lisp code,
+;; the standard `narrow-to-region' is preferable, because the fancy
+;; version is susceptible to `inhibit-read-only'.
 
 ;;; License:
 ;;
@@ -44,23 +43,19 @@
 ;; 0.1a - 2014/03/17 -  - Created File.
 ;;; Code:
 
-(defconst fancy-narrow-region-version "0.1a" "Version of the fancy-narrow-region.el package.")
+(defconst fancy-narrow-version "0.1a" "Version of the fancy-narrow-region.el package.")
 (defun fancy-narrow-bug-report ()
   "Opens github issues page in a web browser. Please send any bugs you find.
 Please include your emacs and fancy-narrow-region versions."
   (interactive)
   (message "Your fancy-narrow-version is: %s, and your emacs version is: %s.\nPlease include this in your report!"
            fancy-narrow-region-version emacs-version)
-  (browse-url "https://github.com/Bruce-Connor/fancy-narrow-region/issues/new"))
-(defun fancy-narrow-customize ()
-  "Open the customization menu in the `fancy-narrow-region' group."
-  (interactive)
-  (customize-group 'fancy-narrow t))
+  (browse-url "https://github.com/Bruce-Connor/fancy-narrow/issues/new"))
 (defgroup fancy-narrow nil
   "Customization group for fancy-narrow."
   :prefix "fancy-narrow-")
 
-(defvar fancy-narrow--help-string
+(defconst fancy-narrow--help-string
   "This region is blocked from editing while buffer is narrowed."
   "Help-echo string displayed on mouse-over.")
 
