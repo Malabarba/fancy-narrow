@@ -98,8 +98,8 @@ Please include your emacs and fancy-narrow-region versions."
     (remove-text-properties (point-min) (point-max) fancy-narrow-properties)))
 
 (defface fancy-narrow-blocked-face
-  '((((background light)) :background "Grey60")
-    (((background dark)) :foreground "Grey60"))
+  '((((background light)) :foreground "Grey70")
+    (((background dark)) :foreground "Grey30"))
   "Face used on blocked text."
   :group 'fancy-narrow-region)
 
