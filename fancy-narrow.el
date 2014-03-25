@@ -22,7 +22,7 @@
 ;; 
 ;; Note this is designed for user interaction. For using within lisp code,
 ;; the standard `narrow-to-region' is preferable, because the fancy
-;; version is susceptible to `inhibit-read-only'.
+;; version is susceptible to `inhibit-read-only' and some corner cases.
 
 ;;; License:
 ;;
