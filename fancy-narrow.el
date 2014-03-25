@@ -4,7 +4,7 @@
 
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
 ;; URL: http://github.com/Bruce-Connor/fancy-narrow-region
-;; Version: 0.2a
+;; Version: 0.5
 ;; Keywords: faces convenience
 ;; Prefix: fancy-narrow
 ;; Separator: -
@@ -40,11 +40,12 @@
 ;; 
 
 ;;; Change Log:
+;; 0.5  - 2014/03/25 - define-minor-mode.
 ;; 0.2a - 2014/03/25 - Stickiness, better motion, and font-lock.
 ;; 0.1a - 2014/03/17 - Created File.
 ;;; Code:
 
-(defconst fancy-narrow-version "0.2a" "Version of the fancy-narrow-region.el package.")
+(defconst fancy-narrow-version "0.5" "Version of the fancy-narrow-region.el package.")
 (defun fancy-narrow-bug-report ()
   "Opens github issues page in a web browser. Please send any bugs you find.
 Please include your emacs and fancy-narrow-region versions."
@@ -92,7 +93,20 @@ Please include your emacs and fancy-narrow-region versions."
 
 ;;;###autoload
 (defun fancy-narrow-to-region (start end)
-  "Like `narrow-to-region', except it still displays the unreachable text."
+  "Like `narrow-to-region', except it still displays the unreachable text.
+
+Unlike `narrow-to-region', which completely hides text outside
+the narrowed region, this function simply deemphasizes the text,
+makes it readonly, and makes it unreachable.
+
+This leads to a much more natural feeling, where the region stays
+static (instead of moving up to hide the text above) and is
+clearly highlighted with respect to the rest of the buffer.
+
+There is a known bug at the moment, which is that comments and
+strings don't deemphasize correctly.
+
+To widen the region again afterwards use `fancy-widen'."
   (interactive "r")
   (let ((l (min start end))
         (r (max start end)))
@@ -106,6 +120,7 @@ Please include your emacs and fancy-narrow-region versions."
     (add-text-properties (point-min) l fancy-narrow-properties)
     (add-text-properties r (point-max) fancy-narrow-properties)))
 
+;;;###autoload
 (defun fancy-widen ()
   "Undo narrowing from `fancy-narrow-to-region'."
   (interactive)
@@ -120,11 +135,163 @@ Please include your emacs and fancy-narrow-region versions."
     (remove-text-properties (point-min) (point-max) fancy-narrow-properties)
     (remove-text-properties (point-min) (point-max) fancy-narrow-properties-stickiness)))
 
+(defcustom fancy-narrow-lighter " *"
+  "Lighter used in the mode-line while the mode is active."
+  :type 'string
+  :group 'fancy-narrow
+  :package-version '(fancy-narrow . "0.5"))
+
+;;;###autoload
+(define-minor-mode fancy-narrow-mode 
+  "Global minor mode that binds the fancy-narrow functions.
+
+The keys used are the same used by the non-fancy functions.
+Binds that are replaced are:
+   widen
+   narrow-to-region
+   narrow-to-defun
+   narrow-to-page
+   org-narrow-to-block
+   org-narrow-to-element
+   org-narrow-to-subtree"
+  t fancy-narrow-lighter
+  '(("nb" . org-fancy-narrow-to-block)
+   ("nd" . fancy-narrow-to-defun)
+   ("ne" . org-fancy-narrow-to-element)
+   ("nn" . fancy-narrow-to-region)
+   ("np" . fancy-narrow-to-page)
+   ("ns" . org-fancy-narrow-to-subtree)
+   ("nw" . fancy-widen))
+  :global t
+  :group 'fancy-narrow)
+
 (defface fancy-narrow-blocked-face
   '((((background light)) :foreground "Grey70")
     (((background dark)) :foreground "Grey30"))
   "Face used on blocked text."
   :group 'fancy-narrow-region)
 
+;;; ---------------------------------------
+;;; COPIED FUNCTIONS:
+;;; The following functions are taken directly from their non-fancy
+;;; counterparts. I did not write them.
+;;;###autoload
+(defun org-fancy-narrow-to-block ()
+  "Like `org-narrow-to-block', except using `fancy-narrow-to-region'."
+  (interactive)
+  (let* ((case-fold-search t)
+         (blockp (org-between-regexps-p "^[ \t]*#\\+begin_.*"
+                                        "^[ \t]*#\\+end_.*")))
+    (if blockp
+        (fancy-narrow-to-region (car blockp) (cdr blockp))
+      (user-error "Not in a block"))))
+;;;###autoload
+(defun fancy-narrow-to-defun (&optional _arg)
+  "Like `narrow-to-defun', except using `fancy-narrow-to-region'."
+  (interactive)
+  (save-excursion
+    (widen)
+    (let ((opoint (point))
+          beg end)
+      (let ((here (point)))
+        (unless (eolp)
+          (forward-char))
+        (beginning-of-defun)
+        (when (< (point) here)
+          (goto-char here)
+          (beginning-of-defun)))
+      (setq beg (point))
+      (end-of-defun)
+      (setq end (point))
+      (while (looking-at "^\n")
+        (forward-line 1))
+      (unless (> (point) opoint)
+        ;; beginning-of-defun moved back one defun
+        ;; so we got the wrong one.
+        (goto-char opoint)
+        (end-of-defun)
+        (setq end (point))
+        (beginning-of-defun)
+        (setq beg (point)))
+      (goto-char end)
+      (re-search-backward "^\n" (- (point) 1) t)
+      (fancy-narrow-to-region beg end))))
+;;;###autoload
+(defun org-fancy-narrow-to-element ()
+  "Like `org-narrow-to-element', except using `fancy-narrow-to-region'."
+  (interactive)
+  (let ((elem (org-element-at-point)))
+    (cond
+     ((eq (car elem) 'headline)
+      (fancy-narrow-to-region
+       (org-element-property :begin elem)
+       (org-element-property :end elem)))
+     ((memq (car elem) org-element-greater-elements)
+      (fancy-narrow-to-region
+       (org-element-property :contents-begin elem)
+       (org-element-property :contents-end elem)))
+     (t
+      (fancy-narrow-to-region
+       (org-element-property :begin elem)
+       (org-element-property :end elem))))))
+;;;###autoload
+(defun fancy-narrow-to-page (&optional arg)
+  "Like `narrow-to-page', except using `fancy-narrow-to-region'."
+  (interactive "P")
+  (setq arg (if arg (prefix-numeric-value arg) 0))
+  (save-excursion
+    (widen)
+    (if (> arg 0)
+        (forward-page arg)
+      (if (< arg 0)
+          (let ((adjust 0)
+                (opoint (point)))
+            ;; If we are not now at the beginning of a page,
+            ;; move back one extra time, to get to the start of this page.
+            (save-excursion
+              (beginning-of-line)
+              (or (and (looking-at page-delimiter)
+                       (eq (match-end 0) opoint))
+                  (setq adjust 1)))
+            (forward-page (- arg adjust)))))
+    ;; Find the end of the page.
+    (set-match-data nil)
+    (forward-page)
+    ;; If we stopped due to end of buffer, stay there.
+    ;; If we stopped after a page delimiter, put end of restriction
+    ;; at the beginning of that line.
+    ;; Before checking the match that was found,
+    ;; verify that forward-page actually set the match data.
+    (if (and (match-beginning 0)
+             (save-excursion
+               (goto-char (match-beginning 0)) ; was (beginning-of-line)
+               (looking-at page-delimiter)))
+        (goto-char (match-beginning 0))) ; was (beginning-of-line)
+    (fancy-narrow-to-region (point)
+                            (progn
+                              ;; Find the top of the page.
+                              (forward-page -1)
+                              ;; If we found beginning of buffer, stay there.
+                              ;; If extra text follows page delimiter on same line,
+                              ;; include it.
+                              ;; Otherwise, show text starting with following line.
+                              (if (and (eolp) (not (bobp)))
+                                  (forward-line 1))
+                              (point)))))
+;;;###autoload
+(defun org-fancy-narrow-to-subtree ()
+  "Like `org-narrow-to-subtree', except using `fancy-narrow-to-region'."
+  (interactive)
+  (save-excursion
+    (save-match-data
+      (org-with-limited-levels
+       (fancy-narrow-to-region
+        (progn (org-back-to-heading t) (point))
+        (progn (org-end-of-subtree t t)
+               (if (and (org-at-heading-p) (not (eobp))) (backward-char 1))
+               (point)))))))
+;;; ---------------------------------------
+
 (provide 'fancy-narrow)
 ;;; fancy-narrow.el ends here.
+
