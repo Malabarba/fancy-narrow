@@ -64,18 +64,27 @@ Please include your emacs and fancy-narrow-region versions."
                fontified nil
                font-lock-face fancy-narrow-blocked-face
                help-echo fancy-narrow--help-string
-               point-left fancy-narrow--motion-function
-               point-entered fancy-narrow--motion-function-enter
                fancy-narrow-this-text-will-be-deleted t)
   "List of properties given to text beyond the narrowed region."
   :type 'list
   :group 'fancy-narrow-region)
 
-(defun fancy-narrow--motion-function (x y)
+(defvar fancy-narrow--beginning nil "")
+(make-variable-buffer-local 'fancy-narrow--beginning)
+(defvar fancy-narrow--end nil "")
+(make-variable-buffer-local 'fancy-narrow--end)
+
+(defun fancy-narrow--motion-function (&rest ignore)
   "Keep point from going past the boundaries."
-  (if (eobp) (forward-char -1)
-    (if (bobp) (forward-char 1))))
-(defalias 'fancy-narrow--motion-function-enter 'fancy-narrow--motion-function)
+  ;; (message "%s:%s" x (p )
+  (let ((inhibit-point-motion-hooks t))
+    (if (< (point) fancy-narrow--beginning)
+        (goto-char fancy-narrow--beginning)
+      (if (> (point) fancy-narrow--end)
+          (goto-char fancy-narrow--end)))))
+
+(defvar fancy-narrow-properties-stickiness
+  '(front-sticky t rear-nonsticky t) "")
 
 ;;;###autoload
 (defun fancy-narrow-to-region (start end)
@@ -83,19 +92,23 @@ Please include your emacs and fancy-narrow-region versions."
   (interactive "r")
   (let ((l (min start end))
         (r (max start end)))
-    (fancy-narrow--propertize-buffer (point-min) l)
-    (fancy-narrow--propertize-buffer r (point-max))))
-
-(defun fancy-narrow--propertize-buffer (l r)
-  ""
-  (add-text-properties l r fancy-narrow-properties))
+    (setq fancy-narrow--beginning (copy-marker l nil)
+          fancy-narrow--end (copy-marker r t))
+    (add-hook 'post-command-hook 'fancy-narrow--motion-function t t)
+    (add-text-properties (point-min) l fancy-narrow-properties-stickiness)
+    (add-text-properties (point-min) l fancy-narrow-properties)
+    (add-text-properties r (point-max) fancy-narrow-properties)))
 
 (defun fancy-widen ()
   "Undo narrowing from `fancy-narrow-to-region'."
   (interactive)
   (let ((inhibit-point-motion-hooks t)
         (inhibit-read-only t))
-    (remove-text-properties (point-min) (point-max) fancy-narrow-properties)))
+    (setq fancy-narrow--beginning nil
+          fancy-narrow--end nil)
+    (remove-hook 'post-command-hook 'fancy-narrow--motion-function t)
+    (remove-text-properties (point-min) (point-max) fancy-narrow-properties)
+    (remove-text-properties (point-min) (point-max) fancy-narrow-properties-stickiness)))
 
 (defface fancy-narrow-blocked-face
   '((((background light)) :foreground "Grey70")
