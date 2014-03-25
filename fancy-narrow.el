@@ -83,6 +83,9 @@ Please include your emacs and fancy-narrow-region versions."
       (if (> (point) fancy-narrow--end)
           (goto-char fancy-narrow--end)))))
 
+(defvar fancy-narrow--was-font-lock nil "")
+(make-variable-buffer-local 'fancy-narrow--was-font-lock)
+
 (defvar fancy-narrow-properties-stickiness
   '(front-sticky t rear-nonsticky t) "")
 
@@ -92,6 +95,9 @@ Please include your emacs and fancy-narrow-region versions."
   (interactive "r")
   (let ((l (min start end))
         (r (max start end)))
+    (unless font-lock-mode
+      (setq fancy-narrow--was-font-lock t)
+      (font-lock-mode 1))
     (setq fancy-narrow--beginning (copy-marker l nil)
           fancy-narrow--end (copy-marker r t))
     (add-hook 'post-command-hook 'fancy-narrow--motion-function t t)
@@ -104,6 +110,9 @@ Please include your emacs and fancy-narrow-region versions."
   (interactive)
   (let ((inhibit-point-motion-hooks t)
         (inhibit-read-only t))
+    (when fancy-narrow--was-font-lock
+      (setq fancy-narrow--was-font-lock nil)
+      (font-lock-mode -1))
     (setq fancy-narrow--beginning nil
           fancy-narrow--end nil)
     (remove-hook 'post-command-hook 'fancy-narrow--motion-function t)
