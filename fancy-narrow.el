@@ -11,14 +11,25 @@
 
 ;;; Commentary:
 ;; 
-;; fancy-narrow is a package that immitates narrow-to-region with more
-;; eye-candy. Instead of completely hiding text beyond the narrowed
-;; region, the text is de-emphasized and becomes unreachable.
+;; fancy-narrow
+;; ============
 ;; 
-;; Simply call `fancy-narrow-to-region' to see it in action. Remember to
-;; `fancy-widen' afterwards.
+;; Emacs package to immitate `narrow-to-region' with more eye-candy.
 ;; 
-;; To change the face used on the blocked text, customise `fancy-narrow-blocked-face'.
+;; Unlike `narrow-to-region', which completely hides text outside
+;; the narrowed region, this package simply deemphasizes the text,
+;; makes it readonly, and makes it unreachable.
+;; 
+;; This leads to a much more natural feeling, where the region stays
+;; static (instead of being brutally moved to a blank slate) and is
+;; clearly highlighted with respect to the rest of the buffer.
+;; 
+;; Simply call `fancy-narrow-to-region' to see it in action. To widen the
+;; region again afterwards use `fancy-widen'.
+;; 
+;; To customise the face used to deemphasize unreachable text, customise
+;; `fancy-narrow-blocked-face'. There is a known bug at the moment, which
+;; is that comments and strings don't deemphasize correctly.
 ;; 
 ;; Note this is designed for user interaction. For using within lisp code,
 ;; the standard `narrow-to-region' is preferable, because the fancy
