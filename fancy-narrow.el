@@ -96,8 +96,10 @@ Please include your emacs and fancy-narrow-region versions."
       (if (> (point) fancy-narrow--end)
           (goto-char fancy-narrow--end)))))
 
-(defvar fancy-narrow--was-font-lock nil "")
-(make-variable-buffer-local 'fancy-narrow--was-font-lock)
+(defvar fancy-narrow--wasnt-font-lock nil "")
+(make-variable-buffer-local 'fancy-narrow--wasnt-font-lock)
+(defvar fancy-narrow--was-flyspell nil "")
+(make-variable-buffer-local 'fancy-narrow--was-flyspell)
 
 (defvar fancy-narrow-properties-stickiness
   '(front-sticky t rear-nonsticky t) "")
@@ -121,9 +123,14 @@ To widen the region again afterwards use `fancy-widen'."
   (interactive "r")
   (let ((l (min start end))
         (r (max start end)))
-    (unless font-lock-mode
-      (setq fancy-narrow--was-font-lock t)
-      (font-lock-mode 1))
+    ;; unless it was already active, patch font-lock and flyspell
+    (unless (and fancy-narrow--beginning fancy-narrow--end)
+      (unless font-lock-mode
+        (setq fancy-narrow--wasnt-font-lock t)
+        (font-lock-mode 1))
+      (when flyspell-mode
+        (setq fancy-narrow--was-flyspell t)
+        (flyspell-mode 0)))
     (setq fancy-narrow--beginning (copy-marker l nil)
           fancy-narrow--end (copy-marker r t))
     (add-hook 'post-command-hook 'fancy-narrow--motion-function t t)
@@ -137,9 +144,12 @@ To widen the region again afterwards use `fancy-widen'."
   (interactive)
   (let ((inhibit-point-motion-hooks t)
         (inhibit-read-only t))
-    (when fancy-narrow--was-font-lock
-      (setq fancy-narrow--was-font-lock nil)
+    (when fancy-narrow--wasnt-font-lock
+      (setq fancy-narrow--wasnt-font-lock nil)
       (font-lock-mode -1))
+    (when fancy-narrow--was-flyspell
+      (setq fancy-narrow--was-flyspell nil)
+      (flyspell-mode 1))
     (setq fancy-narrow--beginning nil
           fancy-narrow--end nil)
     (remove-hook 'post-command-hook 'fancy-narrow--motion-function t)
