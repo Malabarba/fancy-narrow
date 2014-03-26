@@ -123,6 +123,9 @@ To widen the region again afterwards use `fancy-widen'."
   (interactive "r")
   (let ((l (min start end))
         (r (max start end)))
+    ;; If it was already active, just become narrower.
+    (when fancy-narrow--beginning (setq l (max l fancy-narrow--beginning)))
+    (when fancy-narrow--end (setq r (max r fancy-narrow--end)))
     ;; unless it was already active, patch font-lock and flyspell
     (unless (and fancy-narrow--beginning fancy-narrow--end)
       (unless font-lock-mode
