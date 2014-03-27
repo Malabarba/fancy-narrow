@@ -64,7 +64,7 @@
 Please include your emacs and fancy-narrow-region versions."
   (interactive)
   (message "Your fancy-narrow-version is: %s, and your emacs version is: %s.\nPlease include this in your report!"
-           fancy-narrow-region-version emacs-version)
+           fancy-narrow-version emacs-version)
   (browse-url "https://github.com/Bruce-Connor/fancy-narrow/issues/new"))
 (defgroup fancy-narrow nil
   "Customization group for fancy-narrow."
