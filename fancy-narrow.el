@@ -84,6 +84,11 @@ Please include your emacs and fancy-narrow-region versions."
   :type 'list
   :group 'fancy-narrow-region)
 
+(defadvice command-execute (after fancy-narrow-after-command-execute-advice () activate)
+  "Run `fancy-narrow--motion-function' after every command."
+  (when (and fancy-narrow--beginning fancy-narrow--end)
+    (fancy-narrow--motion-function)))
+
 (defvar fancy-narrow--beginning nil "")
 (make-variable-buffer-local 'fancy-narrow--beginning)
 (defvar fancy-narrow--end nil "")
@@ -91,7 +96,6 @@ Please include your emacs and fancy-narrow-region versions."
 
 (defun fancy-narrow--motion-function (&rest ignore)
   "Keep point from going past the boundaries."
-  ;; (message "%s:%s" x (p )
   (let ((inhibit-point-motion-hooks t))
     (if (< (point) fancy-narrow--beginning)
         (goto-char fancy-narrow--beginning)
