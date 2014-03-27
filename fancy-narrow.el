@@ -28,8 +28,7 @@
 ;; region again afterwards use `fancy-widen'.
 ;; 
 ;; To customise the face used to deemphasize unreachable text, customise
-;; `fancy-narrow-blocked-face'. There is a known bug at the moment, which
-;; is that comments and strings don't deemphasize correctly.
+;; `fancy-narrow-blocked-face'. 
 ;; 
 ;; Note this is designed for user interaction. For using within lisp code,
 ;; the standard `narrow-to-region' is preferable, because the fancy
@@ -207,12 +206,12 @@ Binds that are replaced are:
    org-narrow-to-subtree"
   nil fancy-narrow-lighter
   '(("nb" . org-fancy-narrow-to-block)
-   ("nd" . fancy-narrow-to-defun)
-   ("ne" . org-fancy-narrow-to-element)
-   ("nn" . fancy-narrow-to-region)
-   ("np" . fancy-narrow-to-page)
-   ("ns" . org-fancy-narrow-to-subtree)
-   ("nw" . fancy-widen))
+    ("nd" . fancy-narrow-to-defun)
+    ("ne" . org-fancy-narrow-to-element)
+    ("nn" . fancy-narrow-to-region)
+    ("np" . fancy-narrow-to-page)
+    ("ns" . org-fancy-narrow-to-subtree)
+    ("nw" . fancy-widen))
   :global t
   :group 'fancy-narrow)
 
