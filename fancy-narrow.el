@@ -127,7 +127,8 @@ strings don't deemphasize correctly.
 
 To widen the region again afterwards use `fancy-widen'."
   (interactive "r")
-  (let ((l (min start end))
+  (let ((modified (buffer-modified-p))
+        (l (min start end))
         (r (max start end)))
     ;; If it was already active, just become narrower.
     (when fancy-narrow--beginning (setq l (max l fancy-narrow--beginning)))
@@ -145,13 +146,16 @@ To widen the region again afterwards use `fancy-widen'."
     (add-hook 'post-command-hook 'fancy-narrow--motion-function t t)
     (add-text-properties (point-min) l fancy-narrow-properties-stickiness)
     (add-text-properties (point-min) l fancy-narrow-properties)
-    (add-text-properties r (point-max) fancy-narrow-properties)))
+    (add-text-properties r (point-max) fancy-narrow-properties)
+    (unless modified
+      (set-buffer-modified-p nil))))
 
 ;;;###autoload
 (defun fancy-widen ()
   "Undo narrowing from `fancy-narrow-to-region'."
   (interactive)
-  (let ((inhibit-point-motion-hooks t)
+  (let ((modified (buffer-modified-p))
+        (inhibit-point-motion-hooks t)
         (inhibit-read-only t))
     (when fancy-narrow--wasnt-font-lock
       (setq fancy-narrow--wasnt-font-lock nil)
@@ -163,7 +167,9 @@ To widen the region again afterwards use `fancy-widen'."
           fancy-narrow--end nil)
     (remove-hook 'post-command-hook 'fancy-narrow--motion-function t)
     (remove-text-properties (point-min) (point-max) fancy-narrow-properties)
-    (remove-text-properties (point-min) (point-max) fancy-narrow-properties-stickiness)))
+    (remove-text-properties (point-min) (point-max) fancy-narrow-properties-stickiness)
+    (unless modified
+      (set-buffer-modified-p nil))))
 
 (defcustom fancy-narrow-lighter " *"
   "Lighter used in the mode-line while the mode is active."
