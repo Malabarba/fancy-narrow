@@ -190,7 +190,7 @@ Binds that are replaced are:
    org-narrow-to-block
    org-narrow-to-element
    org-narrow-to-subtree"
-  t fancy-narrow-lighter
+  nil fancy-narrow-lighter
   '(("nb" . org-fancy-narrow-to-block)
    ("nd" . fancy-narrow-to-defun)
    ("ne" . org-fancy-narrow-to-element)
