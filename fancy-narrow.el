@@ -51,6 +51,7 @@
 ;; 
 
 ;;; Change Log:
+;; 0.8  - 2014/03/27 - Use overlays to improve deemphasizing.
 ;; 0.6  - 2014/03/26 - Successive narrowing results in intersection of previous and new regions.
 ;; 0.6  - 2014/03/26 - Flycheck protection.
 ;; 0.5  - 2014/03/25 - define-minor-mode.
@@ -145,10 +146,23 @@ To widen the region again afterwards use `fancy-widen'."
           fancy-narrow--end (copy-marker r t))
     (add-hook 'post-command-hook 'fancy-narrow--motion-function t t)
     (add-text-properties (point-min) l fancy-narrow-properties-stickiness)
-    (add-text-properties (point-min) l fancy-narrow-properties)
-    (add-text-properties r (point-max) fancy-narrow-properties)
+    (fancy-narrow--propertize-region (point-min) l)
+    (fancy-narrow--propertize-region r (point-max))
     (unless modified
       (set-buffer-modified-p nil))))
+
+(defvar fancy-narrow--overlay-left nil "")
+(make-variable-buffer-local 'fancy-narrow--overlay-left)
+(defvar fancy-narrow--overlay-right nil "")
+(make-variable-buffer-local 'fancy-narrow--overlay-right)
+
+(defun fancy-narrow--propertize-region (l r)
+  (let* ((left (= l (point-min)))
+         (s (if left 'fancy-narrow--overlay-left 'fancy-narrow--overlay-right)))
+    (set s (make-overlay l r nil (null left) (null left)))
+    ;; (overlay-put (eval s) 'display (buffer-substring-no-properties l r))
+    (overlay-put (eval s) 'face 'fancy-narrow-blocked-face)
+    (add-text-properties l r fancy-narrow-properties)))
 
 ;;;###autoload
 (defun fancy-widen ()
@@ -165,11 +179,12 @@ To widen the region again afterwards use `fancy-widen'."
       (flyspell-mode 1))
     (setq fancy-narrow--beginning nil
           fancy-narrow--end nil)
+    (delete-overlay fancy-narrow--overlay-left)
+    (delete-overlay fancy-narrow--overlay-right)
     (remove-hook 'post-command-hook 'fancy-narrow--motion-function t)
     (remove-text-properties (point-min) (point-max) fancy-narrow-properties)
     (remove-text-properties (point-min) (point-max) fancy-narrow-properties-stickiness)
-    (unless modified
-      (set-buffer-modified-p nil))))
+    (unless modified (set-buffer-modified-p nil))))
 
 (defcustom fancy-narrow-lighter " *"
   "Lighter used in the mode-line while the mode is active."
