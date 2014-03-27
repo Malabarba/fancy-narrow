@@ -1,7 +1,9 @@
-fancy-narrow
+fancy-narrow [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=B9GT37MB4Y64E)
 ============
 
 Emacs package to immitate [`narrow-to-region`](http://bruce-connor.github.io/emacs-online-documentation/Fun%2Fnarrow-to-region.html) with more eye-candy.
+
+![Narrowed google-this](https://raw.github.com/Bruce-Connor/fancy-narrow/master/narrowed-google-this.png)
 
 Unlike [`narrow-to-region`](http://bruce-connor.github.io/emacs-online-documentation/Fun%2Fnarrow-to-region.html), which completely hides text outside the narrowed region, this package simply deemphasizes the text, makes it readonly, and makes it unreachable.This leads to a much more natural feeling, where the region stays static (instead of being brutally moved to a blank slate) and is clearly highlighted with respect to the rest of the buffer.
 
