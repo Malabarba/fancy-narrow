@@ -88,6 +88,14 @@ Please include your emacs and fancy-narrow-region versions."
   "Run `fancy-narrow--motion-function' after every command."
   (when (and fancy-narrow--beginning fancy-narrow--end)
     (fancy-narrow--motion-function)))
+(defadvice point-min (around fancy-narrow-around-point-min-advice () activate)
+  "Return the start of narrowed region."
+  (setq ad-return-value fancy-narrow--beginning)
+  (or ad-return-value ad-do-it))
+(defadvice point-max (around fancy-narrow-around-point-max-advice () activate)
+  "Return the start of narrowed region."
+  (setq ad-return-value fancy-narrow--end)
+  (or ad-return-value ad-do-it))
 
 (defvar fancy-narrow--beginning nil "")
 (make-variable-buffer-local 'fancy-narrow--beginning)
@@ -141,12 +149,12 @@ To widen the region again afterwards use `fancy-widen'."
       (when flyspell-mode
         (setq fancy-narrow--was-flyspell t)
         (flyspell-mode 0)))
-    (setq fancy-narrow--beginning (copy-marker l nil)
-          fancy-narrow--end (copy-marker r t))
     (add-hook 'post-command-hook 'fancy-narrow--motion-function t t)
     (add-text-properties (point-min) l fancy-narrow-properties-stickiness)
     (fancy-narrow--propertize-region (point-min) l)
     (fancy-narrow--propertize-region r (point-max))
+    (setq fancy-narrow--beginning (copy-marker l nil)
+          fancy-narrow--end (copy-marker r t))
     (unless modified
       (set-buffer-modified-p nil))))
 
