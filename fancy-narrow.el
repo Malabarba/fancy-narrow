@@ -4,7 +4,7 @@
 
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
 ;; URL: http://github.com/Bruce-Connor/fancy-narrow-region
-;; Version: 0.8
+;; Version: 0.9
 ;; Keywords: faces convenience
 ;; Prefix: fancy-narrow
 ;; Separator: -
@@ -58,7 +58,7 @@
 ;; 0.1a - 2014/03/17 - Created File.
 ;;; Code:
 
-(defconst fancy-narrow-version "0.8" "Version of the fancy-narrow-region.el package.")
+(defconst fancy-narrow-version "0.9" "Version of the fancy-narrow-region.el package.")
 (defun fancy-narrow-bug-report ()
   "Opens github issues page in a web browser. Please send any bugs you find.
 Please include your emacs and fancy-narrow-region versions."
@@ -90,12 +90,24 @@ Please include your emacs and fancy-narrow-region versions."
     (fancy-narrow--motion-function)))
 (defadvice point-min (around fancy-narrow-around-point-min-advice () activate)
   "Return the start of narrowed region."
-  (setq ad-return-value fancy-narrow--beginning)
-  (or ad-return-value ad-do-it))
+  (if (markerp fancy-narrow--beginning)
+      (setq ad-return-value (marker-position fancy-narrow--beginning))
+    ad-do-it))
+(defadvice point-min-marker (around fancy-narrow-around-point-min-advice () activate)
+  "Return the start of narrowed region."
+  (if (markerp fancy-narrow--beginning)
+      (setq ad-return-value fancy-narrow--beginning)
+    ad-do-it))
 (defadvice point-max (around fancy-narrow-around-point-max-advice () activate)
   "Return the start of narrowed region."
-  (setq ad-return-value fancy-narrow--end)
-  (or ad-return-value ad-do-it))
+  (if (markerp fancy-narrow--end)
+      (setq ad-return-value (marker-position fancy-narrow--end))
+    ad-do-it))
+(defadvice point-max-marker (around fancy-narrow-around-point-max-advice () activate)
+  "Return the start of narrowed region."
+  (if (markerp fancy-narrow--end)
+      (setq ad-return-value fancy-narrow--end)
+    ad-do-it))
 
 (defvar fancy-narrow--beginning nil "")
 (make-variable-buffer-local 'fancy-narrow--beginning)
