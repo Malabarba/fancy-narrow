@@ -4,7 +4,7 @@
 
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
 ;; URL: http://github.com/Bruce-Connor/fancy-narrow-region
-;; Version: 0.9.1
+;; Version: 0.9.2
 ;; Keywords: faces convenience
 ;; Prefix: fancy-narrow
 ;; Separator: -
@@ -58,7 +58,7 @@
 ;; 0.1a - 2014/03/17 - Created File.
 ;;; Code:
 
-(defconst fancy-narrow-version "0.9.1" "Version of the fancy-narrow-region.el package.")
+(defconst fancy-narrow-version "0.9.2" "Version of the fancy-narrow-region.el package.")
 (defun fancy-narrow-bug-report ()
   "Opens github issues page in a web browser. Please send any bugs you find.
 Please include your emacs and fancy-narrow-region versions."
