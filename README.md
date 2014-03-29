@@ -5,7 +5,7 @@ Emacs package to immitate [`narrow-to-region`](http://bruce-connor.github.io/ema
 
 ![Narrowed google-this](https://raw.github.com/Bruce-Connor/fancy-narrow/master/narrowed-google-this.png)
 
-Unlike [`narrow-to-region`](http://bruce-connor.github.io/emacs-online-documentation/Fun%2Fnarrow-to-region.html), which completely hides text outside the narrowed region, this package simply deemphasizes the text, makes it readonly, and makes it unreachable.This leads to a much more natural feeling, where the region stays static (instead of being brutally moved to a blank slate) and is clearly highlighted with respect to the rest of the buffer.
+Unlike [`narrow-to-region`](http://bruce-connor.github.io/emacs-online-documentation/Fun%2Fnarrow-to-region.html), which completely hides text outside the narrowed region, this package simply deemphasizes the text, makes it readonly, and makes it unreachable. This leads to a much more natural feeling, where the region stays static (instead of being brutally moved to a blank slate) and is clearly highlighted with respect to the rest of the buffer.
 
 ### Installation ###
 

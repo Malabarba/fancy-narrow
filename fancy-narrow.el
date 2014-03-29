@@ -84,30 +84,61 @@ Please include your emacs and fancy-narrow-region versions."
   :type 'list
   :group 'fancy-narrow-region)
 
-(defadvice command-execute (after fancy-narrow-after-command-execute-advice () activate)
+(defadvice command-execute
+    (after fancy-narrow-after-command-execute-advice () activate compile)
   "Run `fancy-narrow--motion-function' after every command."
   (when (and fancy-narrow--beginning fancy-narrow--end)
     (fancy-narrow--motion-function)))
-(defadvice point-min (around fancy-narrow-around-point-min-advice () activate)
+(defadvice point-min
+    (around fancy-narrow-around-point-min-advice () activate compile)
   "Return the start of narrowed region."
   (if (markerp fancy-narrow--beginning)
       (setq ad-return-value (marker-position fancy-narrow--beginning))
     ad-do-it))
-(defadvice point-min-marker (around fancy-narrow-around-point-min-advice () activate)
+(defadvice point-min-marker
+    (around fancy-narrow-around-point-min-advice () activate compile)
   "Return the start of narrowed region."
   (if (markerp fancy-narrow--beginning)
       (setq ad-return-value fancy-narrow--beginning)
     ad-do-it))
-(defadvice point-max (around fancy-narrow-around-point-max-advice () activate)
+(defadvice point-max
+    (around fancy-narrow-around-point-max-advice () activate compile)
   "Return the start of narrowed region."
   (if (markerp fancy-narrow--end)
       (setq ad-return-value (marker-position fancy-narrow--end))
     ad-do-it))
-(defadvice point-max-marker (around fancy-narrow-around-point-max-advice () activate)
+(defadvice point-max-marker
+    (around fancy-narrow-around-point-max-advice () activate compile)
   "Return the start of narrowed region."
   (if (markerp fancy-narrow--end)
       (setq ad-return-value fancy-narrow--end)
     ad-do-it))
+
+(defun fancy-narrow--advise-function (function)
+  (eval 
+   `(defadvice ,function
+        (around fancy-narrow-around-advice activate compile)
+      (if (not (and fancy-narrow--end fancy-narrow--beginning))
+          ad-do-it
+        (save-restriction 
+          (narrow-to-region fancy-narrow--end fancy-narrow--beginning)
+          ad-do-it)))))
+(mapc 'fancy-narrow--advise-function
+      '(perform-replace
+        buffer-string buffer-substring
+        buffer-substring-no-properties        
+        re-search-backward re-search-forward
+        search-backward-regexp search-forward-regexp
+        search-backward search-forward
+        forward-line  beginning-of-line end-of-line
+        kill-whole-line
+        kill-line
+        forward-char  backward-char
+        forward-word backward-word 
+        forward-sexp backward-sexp 
+        forward-paragraph backward-paragraph 
+        end-of-defun beginning-of-defun
+        goto-char  eobp bobp))
 
 (defvar fancy-narrow--beginning nil "")
 (make-variable-buffer-local 'fancy-narrow--beginning)
