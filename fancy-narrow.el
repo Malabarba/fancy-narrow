@@ -139,11 +139,13 @@ Please include your emacs and fancy-narrow-region versions."
         search-backward search-forward
         forward-line  beginning-of-line end-of-line
         mark-whole-buffer
+        delete-blank-lines
         kill-whole-line kill-line
         forward-char backward-char
         forward-word backward-word 
         forward-sexp backward-sexp 
-        forward-paragraph backward-paragraph 
+        forward-paragraph backward-paragraph
+        beginning-of-buffer end-of-buffer
         end-of-defun beginning-of-defun
         goto-char  eobp bobp))
 
