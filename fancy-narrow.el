@@ -84,45 +84,52 @@ Please include your emacs and fancy-narrow-region versions."
   :type 'list
   :group 'fancy-narrow-region)
 
+;;;###autoload
+(defun fancy-narrow-active-p ()
+  "If the current buffer fancy-narrowed?"
+  (and (boundp 'fancy-narrow--beginning) (boundp 'fancy-narrow--end)
+       fancy-narrow--beginning fancy-narrow--end))
+
 (defadvice command-execute
-    (after fancy-narrow-after-command-execute-advice () activate compile)
+    (after fancy-narrow-after-command-execute-advice () activate)
   "Run `fancy-narrow--motion-function' after every command."
-  (when (and fancy-narrow--beginning fancy-narrow--end)
+  (when (fancy-narrow-active-p)
     (fancy-narrow--motion-function)))
 (defadvice point-min
-    (around fancy-narrow-around-point-min-advice () activate compile)
+    (around fancy-narrow-around-point-min-advice () activate)
   "Return the start of narrowed region."
-  (if (markerp fancy-narrow--beginning)
+  (if (fancy-narrow-active-p)
       (setq ad-return-value (marker-position fancy-narrow--beginning))
     ad-do-it))
 (defadvice point-min-marker
-    (around fancy-narrow-around-point-min-advice () activate compile)
+    (around fancy-narrow-around-point-min-advice () activate)
   "Return the start of narrowed region."
-  (if (markerp fancy-narrow--beginning)
+  (if (fancy-narrow-active-p)
       (setq ad-return-value fancy-narrow--beginning)
     ad-do-it))
 (defadvice point-max
-    (around fancy-narrow-around-point-max-advice () activate compile)
+    (around fancy-narrow-around-point-max-advice () activate)
   "Return the start of narrowed region."
-  (if (markerp fancy-narrow--end)
+  (if (fancy-narrow-active-p)
       (setq ad-return-value (marker-position fancy-narrow--end))
     ad-do-it))
 (defadvice point-max-marker
-    (around fancy-narrow-around-point-max-advice () activate compile)
+    (around fancy-narrow-around-point-max-advice () activate)
   "Return the start of narrowed region."
-  (if (markerp fancy-narrow--end)
+  (if (fancy-narrow-active-p)
       (setq ad-return-value fancy-narrow--end)
     ad-do-it))
 
 (defun fancy-narrow--advise-function (function)
   (eval 
    `(defadvice ,function
-        (around fancy-narrow-around-advice activate compile)
-      (if (not (and fancy-narrow--end fancy-narrow--beginning))
+        (around fancy-narrow-around-advice () activate)
+      (if (not (fancy-narrow-active-p))
           ad-do-it
         (save-restriction 
           (narrow-to-region fancy-narrow--end fancy-narrow--beginning)
           ad-do-it)))))
+
 (mapc 'fancy-narrow--advise-function
       '(perform-replace
         buffer-string buffer-substring
@@ -131,18 +138,22 @@ Please include your emacs and fancy-narrow-region versions."
         search-backward-regexp search-forward-regexp
         search-backward search-forward
         forward-line  beginning-of-line end-of-line
-        kill-whole-line
-        kill-line
-        forward-char  backward-char
+        mark-whole-buffer
+        kill-whole-line kill-line
+        forward-char backward-char
         forward-word backward-word 
         forward-sexp backward-sexp 
         forward-paragraph backward-paragraph 
         end-of-defun beginning-of-defun
         goto-char  eobp bobp))
 
+;;;###autoload
 (defvar fancy-narrow--beginning nil "")
+;;;###autoload
 (make-variable-buffer-local 'fancy-narrow--beginning)
+;;;###autoload
 (defvar fancy-narrow--end nil "")
+;;;###autoload
 (make-variable-buffer-local 'fancy-narrow--end)
 
 (defun fancy-narrow--motion-function (&rest ignore)
@@ -395,4 +406,3 @@ Binds that are replaced are:
 
 (provide 'fancy-narrow)
 ;;; fancy-narrow.el ends here.
-
