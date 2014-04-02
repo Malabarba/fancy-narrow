@@ -4,7 +4,7 @@
 
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
 ;; URL: http://github.com/Bruce-Connor/fancy-narrow-region
-;; Version: 0.9.3
+;; Version: 0.9.4
 ;; Keywords: faces convenience
 ;; Prefix: fancy-narrow
 ;; Separator: -
@@ -50,15 +50,16 @@
 ;; 
 
 ;;; Change Log:
-;; 0.8  - 2014/03/27 - Use overlays to improve deemphasizing.
-;; 0.6  - 2014/03/26 - Successive narrowing results in intersection of previous and new regions.
-;; 0.6  - 2014/03/26 - Flycheck protection.
-;; 0.5  - 2014/03/25 - define-minor-mode.
-;; 0.2a - 2014/03/25 - Stickiness, better motion, and font-lock.
-;; 0.1a - 2014/03/17 - Created File.
+;; 0.9.4 - 2014/04/02 - Fix multiple narrows. Fix font lock.
+;; 0.8   - 2014/03/27 - Use overlays to improve deemphasizing.
+;; 0.6   - 2014/03/26 - Successive narrowing results in intersection of previous and new regions.
+;; 0.6   - 2014/03/26 - Flycheck protection.
+;; 0.5   - 2014/03/25 - define-minor-mode.
+;; 0.2a  - 2014/03/25 - Stickiness, better motion, and font-lock.
+;; 0.1a  - 2014/03/17 - Created File.
 ;;; Code:
 
-(defconst fancy-narrow-version "0.9.3" "Version of the fancy-narrow-region.el package.")
+(defconst fancy-narrow-version "0.9.4" "Version of the fancy-narrow-region.el package.")
 (defun fancy-narrow-bug-report ()
   "Opens github issues page in a web browser. Please send any bugs you find.
 Please include your emacs and fancy-narrow-region versions."
@@ -197,11 +198,12 @@ To widen the region again afterwards use `fancy-widen'."
     ;; If it was already active, just become narrower.
     (when fancy-narrow--beginning (setq l (max l fancy-narrow--beginning)))
     (when fancy-narrow--end (setq r (max r fancy-narrow--end)))
-    ;; unless it was already active, patch font-lock and flyspell
-    (unless (and fancy-narrow--beginning fancy-narrow--end)
+    (if (and fancy-narrow--beginning fancy-narrow--end)
+        ;; If it was already active, widen first, so we don't "advise" ourselves.
+        (fancy-widen)
+      ;; unless it was already active, patch font-lock and flyspell
       (unless font-lock-mode
-        (setq fancy-narrow--wasnt-font-lock t)
-        (font-lock-mode 1))
+        (setq fancy-narrow--wasnt-font-lock t))
       (when flyspell-mode
         (setq fancy-narrow--was-flyspell t)
         (flyspell-mode 0)))
@@ -209,8 +211,15 @@ To widen the region again afterwards use `fancy-widen'."
     (add-text-properties (point-min) l fancy-narrow-properties-stickiness)
     (fancy-narrow--propertize-region (point-min) l)
     (fancy-narrow--propertize-region r (point-max))
-    (setq fancy-narrow--beginning (copy-marker l nil)
-          fancy-narrow--end (copy-marker r t))
+    (if fancy-narrow--wasnt-font-lock
+        (progn
+          (font-lock-fontify-region r (point-max))
+          (font-lock-fontify-region (point-min) l))
+      ;; We have to ask to refontify the region, because apparently we
+      ;; broke fontlocking somewhere above.
+      (font-lock-fontify-region l r))
+    (setq fancy-narrow--beginning (copy-marker l nil))
+    (setq fancy-narrow--end (copy-marker r t))
     (unless modified
       (set-buffer-modified-p nil))))
 
@@ -222,8 +231,8 @@ To widen the region again afterwards use `fancy-widen'."
 (defun fancy-narrow--propertize-region (l r)
   (let* ((left (= l (point-min)))
          (s (if left 'fancy-narrow--overlay-left 'fancy-narrow--overlay-right)))
+    (if (overlayp (eval s)) (delete-overlay (eval s)))
     (set s (make-overlay l r nil (null left) (null left)))
-    ;; (overlay-put (eval s) 'display (buffer-substring-no-properties l r))
     (overlay-put (eval s) 'face 'fancy-narrow-blocked-face)
     (add-text-properties l r fancy-narrow-properties)))
 
