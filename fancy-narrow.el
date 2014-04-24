@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014 Artur Malabarba <bruce.connor.am@gmail.com>
 
 ;; Author: Artur Malabarba <bruce.connor.am@gmail.com>
-;; URL: http://github.com/Bruce-Connor/fancy-narrow-region
+;; URL: http://github.com/Bruce-Connor/fancy-narrow
 ;; Version: 0.9.4
 ;; Keywords: faces convenience
 ;; Prefix: fancy-narrow
