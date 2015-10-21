@@ -69,7 +69,8 @@ Please include your emacs and fancy-narrow-region versions."
   (browse-url "https://github.com/Bruce-Connor/fancy-narrow/issues/new"))
 (defgroup fancy-narrow nil
   "Customization group for fancy-narrow."
-  :prefix "fancy-narrow-")
+  :prefix "fancy-narrow-"
+  :group 'editing)
 
 (defconst fancy-narrow--help-string
   "This region is blocked from editing while buffer is narrowed."
