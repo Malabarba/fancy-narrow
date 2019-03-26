@@ -1,4 +1,11 @@
-fancy-narrow [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=B9GT37MB4Y64E)
+Unsupported Package
+============
+
+Heads up. This package is quite hacky, and I don't support anymore.
+Of course, you're free to use it if you want, I just won't offer support for any bugs you encounter.
+
+
+fancy-narrow
 ============
 
 Emacs package to immitate [`narrow-to-region`](http://doc.endlessparentheses.com/Fun/narrow-to-region.html) with more eye-candy.
